@@ -72,7 +72,7 @@ http://localhost:8001
 
 1. Clone the repo:
    \`\`\`bash
-   git clone https://github.com/Subhadip956425/NeuroFleetX.git
+   git clone https://github.com/Somesh4206/NeuroFleetX.git
    cd NeuroFleetX
    \`\`\`
 
