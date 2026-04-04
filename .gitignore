@@ -1,0 +1,38 @@
+# ============================================================
+# NeuroFleetX — .gitignore
+# ============================================================
+
+# ---- Environment / Secrets --------------------------------
+# Keep .env.example files but ignore local overrides
+.env.local
+.env.*.local
+neurofleetx-frontend/.env.local
+
+# ---- Maven / Java -----------------------------------------
+neurofleetx-backend/target/
+neurofleetx-backend/.mvn/wrapper/maven-wrapper.jar
+neurofleetx-backend/*.log
+
+# ---- Node / Frontend --------------------------------------
+neurofleetx-frontend/node_modules/
+neurofleetx-frontend/dist/
+neurofleetx-frontend/.vite/
+
+# ---- Python / ML ------------------------------------------
+neurofleetx-ml/__pycache__/
+neurofleetx-ml/*.pyc
+neurofleetx-ml/.venv/
+neurofleetx-ml/venv/
+neurofleetx-ml/*.egg-info/
+
+# ---- Docker volumes / data --------------------------------
+mysql_data/
+
+# ---- IDE --------------------------------------------------
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

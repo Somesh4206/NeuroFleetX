@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear NeuroFleetX Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .success {
+            color: #10b981;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+        }
+        .info {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 NeuroFleetX Storage Cleaner</h1>
+        <p>Click the button below to clear your browser's localStorage and fix login issues.</p>
+        
+        <div class="info">
+            <strong>This will clear:</strong><br>
+            • JWT Token<br>
+            • User ID<br>
+            • User Role<br>
+            • All cached data
+        </div>
+
+        <button onclick="clearStorage()">Clear Storage & Redirect to Login</button>
+        
+        <div class="success" id="success">
+            ✅ Storage cleared! Redirecting to login...
+        </div>
+    </div>
+
+    <script>
+        function clearStorage() {
+            // Clear localStorage
+            localStorage.clear();
+            
+            // Clear sessionStorage
+            sessionStorage.clear();
+            
+            // Show success message
+            document.getElementById('success').style.display = 'block';
+            
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'http://localhost:5173/login';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

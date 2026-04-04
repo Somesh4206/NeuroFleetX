@@ -1,0 +1,137 @@
+version: "3.9"
+
+# ============================================================
+# NeuroFleetX — Docker Compose (MySQL Stack)
+# Usage:
+#   docker-compose up --build       # start everything
+#   docker-compose up db            # start MySQL only
+#   docker-compose down -v          # stop & remove volumes
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # MySQL 8 Database
+  # ----------------------------------------------------------
+  db:
+    image: mysql:8.0
+    container_name: neurofleetx-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root123}
+      MYSQL_DATABASE: neurofleetx
+      MYSQL_USER: ${DB_USERNAME:-neurofleetx}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-root123}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - neurofleetx-net
+
+  # ----------------------------------------------------------
+  # Spring Boot Backend
+  # ----------------------------------------------------------
+  backend:
+    build:
+      context: ./neurofleetx-backend
+      dockerfile: Dockerfile
+    container_name: neurofleetx-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_started
+    environment:
+      SPRING_APPLICATION_NAME: NeuroFleetX
+      DB_URL: jdbc:mysql://db:3306/neurofleetx?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      DB_USERNAME: ${DB_USERNAME:-neurofleetx}
+      DB_PASSWORD: ${DB_PASSWORD:-root123}
+      JPA_DDL_AUTO: update
+      JPA_SHOW_SQL: "false"
+      JWT_SECRET: ${JWT_SECRET:-ThisIsA256BitSecretKeyForNeuroFleetXChangeThisInProduction!!}
+      JWT_EXPIRATION_MS: "86400000"
+      ML_SERVICE_URL: http://ml:5001
+      ML_SERVICE_CONNECT_TIMEOUT: "5000"
+      ML_SERVICE_READ_TIMEOUT: "10000"
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: "587"
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: "true"
+      SMTP_STARTTLS_ENABLE: "true"
+      SMTP_STARTTLS_REQUIRED: "true"
+      APP_NAME: NeuroFleetX
+      APP_URL: ${APP_URL:-http://localhost:5173}
+      APP_SUPPORT_EMAIL: ${APP_SUPPORT_EMAIL:-support@neurofleetx.com}
+      APP_NOREPLY_EMAIL: ${APP_NOREPLY_EMAIL:-noreply@neurofleetx.com}
+      PASSWORD_RESET_TOKEN_EXPIRY: "3600000"
+      BOOKING_DEFAULT_PRICE_PER_HOUR: "500"
+      BOOKING_EV_SURCHARGE: "50"
+      BOOKING_TIME_SLOT_DURATION: "60"
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-placeholder}
+      MAINTENANCE_CHECK_INTERVAL_DAYS: "30"
+      MAINTENANCE_CRITICAL_THRESHOLD: "7"
+      MAINTENANCE_DUE_THRESHOLD: "14"
+      SERVER_PORT: "8080"
+    ports:
+      - "8080:8080"
+    networks:
+      - neurofleetx-net
+
+  # ----------------------------------------------------------
+  # Python ML Service (Flask)
+  # ----------------------------------------------------------
+  ml:
+    build:
+      context: ./neurofleetx-ml
+      dockerfile: Dockerfile
+    container_name: neurofleetx-ml
+    restart: unless-stopped
+    environment:
+      PORT: "5001"
+    ports:
+      - "5001:5001"
+    networks:
+      - neurofleetx-net
+
+  # ----------------------------------------------------------
+  # React Frontend (Vite dev server)
+  # For production: build & serve with nginx instead.
+  # ----------------------------------------------------------
+  frontend:
+    build:
+      context: ./neurofleetx-frontend
+      dockerfile: Dockerfile.frontend
+    container_name: neurofleetx-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:8080
+      VITE_WS_TELEMETRY_URL: http://localhost:8080/ws-telemetry
+      VITE_WS_MAINTENANCE_URL: http://localhost:8080/ws-maintenance
+      VITE_ENABLE_WEBSOCKET: "true"
+      VITE_RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+      VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+    ports:
+      - "5173:5173"
+    networks:
+      - neurofleetx-net
+
+# ============================================================
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  neurofleetx-net:
+    driver: bridge
