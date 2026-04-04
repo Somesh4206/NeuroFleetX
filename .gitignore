@@ -24,6 +24,8 @@ neurofleetx-ml/*.pyc
 neurofleetx-ml/.venv/
 neurofleetx-ml/venv/
 neurofleetx-ml/*.egg-info/
+# Exclude large ML model files (download separately or train locally)
+neurofleetx-ml/*.pkl
 
 # ---- Docker volumes / data --------------------------------
 mysql_data/
